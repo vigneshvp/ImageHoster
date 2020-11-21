@@ -94,9 +94,11 @@ public class ImageController {
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
     public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+        String tags="";
         Image image = imageService.getImage(imageId);
-
-        String tags = convertTagsToString(image.getTags());
+        if(image.getTags().size()>0) {
+            tags = convertTagsToString(image.getTags());
+        }
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
         return "images/edit";
@@ -114,26 +116,35 @@ public class ImageController {
     //The method also receives tags parameter which is a string of all the tags separated by a comma using the annotation @RequestParam
     //The method converts the string to a list of all the tags using findOrCreateTags() method and sets the tags attribute of an image as a list of all the tags
     @RequestMapping(value = "/editImage", method = RequestMethod.PUT)
-    public String editImageSubmit(@RequestParam("file") MultipartFile file, @RequestParam("imageId") Integer imageId, @RequestParam("tags") String tags, Image updatedImage, HttpSession session) throws IOException {
+    public String editImageSubmit(@RequestParam("file") MultipartFile file, @RequestParam("imageId") Integer imageId, @RequestParam("tags") String tags, Image updatedImage, HttpSession session , Model model) throws IOException {
 
         Image image = imageService.getImage(imageId);
-        String updatedImageData = convertUploadedFileToBase64(file);
-        List<Tag> imageTags = findOrCreateTags(tags);
-
-        if (updatedImageData.isEmpty())
-            updatedImage.setImageFile(image.getImageFile());
-        else {
-            updatedImage.setImageFile(updatedImageData);
-        }
-
-        updatedImage.setId(imageId);
         User user = (User) session.getAttribute("loggeduser");
-        updatedImage.setUser(user);
-        updatedImage.setTags(imageTags);
-        updatedImage.setDate(new Date());
-
-        imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        if(user.getId() == image.getUser().getId() && user.getUsername().equalsIgnoreCase(image.getUser().getUsername())) {
+            String updatedImageData = convertUploadedFileToBase64(file);
+            List<Tag> imageTags = findOrCreateTags(tags);
+            if (updatedImageData.isEmpty())
+                updatedImage.setImageFile(image.getImageFile());
+            else {
+                updatedImage.setImageFile(updatedImageData);
+            }
+            updatedImage.setId(imageId);
+            updatedImage.setUser(user);
+            updatedImage.setTags(imageTags);
+            updatedImage.setDate(new Date());
+            imageService.updateImage(updatedImage);
+            model.addAttribute("image",updatedImage);
+        }
+        else {
+            String error = "Only the owner of the image can edit the image";
+            model.addAttribute("editError",error);
+            model.addAttribute("image",image);
+        }
+        
+        return "images/image";
+    
+    
+    
     }
 
 
@@ -141,9 +152,23 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId,HttpSession session, Model model) throws IOException{
+        Image imageToBeDeleted = imageService.getImage(imageId);
+        if(imageToBeDeleted != null) {
+            User user = (User) session.getAttribute("loggeduser");
+            if(user.getId() == imageToBeDeleted.getUser().getId() && user.getUsername().equalsIgnoreCase(imageToBeDeleted.getUser().getUsername())) {
+                imageService.deleteImage(imageId);
+            }
+            else {
+                String error = "Only the owner of the image can delete the image";
+                model.addAttribute("image",imageToBeDeleted);
+                model.addAttribute("deleteError",error);
+                return "images/image";
+            }
+        }
         return "redirect:/images";
+    
+        
     }
 
 
