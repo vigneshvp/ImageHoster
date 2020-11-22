@@ -1,4 +1,3 @@
-/*
 package ImageHoster.controller;
 
 import ImageHoster.model.User;
@@ -25,27 +24,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
-
+    
     protected MockHttpSession session;
-
+    
     @Autowired
     private MockMvc mockMvc;
-
+    
     @MockBean
     private UserService userService;
-
+    
     @MockBean
     private ImageService imageService;
-
+    
     //This test checks the controller logic for user signup when user requests for a registration form and checks whether the logic returns the html file 'users/registration.html'
     @Test
     public void signupWithGetRequest() throws Exception {
         this.mockMvc.perform(get("/users/registration"))
-                .andExpect(view().name("users/registration"))
-                .andExpect(content().string(containsString("Please Register:")));
+            .andExpect(view().name("users/registration"))
+            .andExpect(content().string(containsString("Please Register:")));
     }
-
-
+    
+    
     //This test checks the controller logic for user signup when user fills the form and send the POST request to the server but the password type is wrong and checks whether the Model type object contains the desired attribute with desired value
     @Test
     public void signupWithWrongPasswordType() throws Exception {
@@ -59,14 +58,14 @@ public class UserControllerTest {
         user.setId(1);
         user.setUsername("Abhi");
         user.setPassword("password");
-
-
+        
         this.mockMvc.perform(post("/users/registration")
-                .flashAttr("user", user)
+                                 .flashAttr("user", user)
         )
-                .andExpect(model().attribute("passwordTypeError", equalTo("Password must contain atleast 1 alphabet, 1 number & 1 special character")));
+            .andExpect(model().attribute("passwordTypeError", equalTo(
+                "Password must contain atleast 1 alphabet, 1 number & 1 special character")));
     }
-
+    
     //This test checks the controller logic for user signup when user fills the form and send the POST request to the server with the correct password type and checks whether the logic returns the html file 'users/login.html'
     @Test
     public void signupWithCorrectPasswordType() throws Exception {
@@ -80,43 +79,43 @@ public class UserControllerTest {
         user.setId(1);
         user.setUsername("Abhi");
         user.setPassword("password1@");
-
-
+        
+        Mockito.when(userService.checkPasswordStrength(Mockito.anyString()))
+            .thenReturn(Boolean.TRUE);
+        
         this.mockMvc.perform(post("/users/registration")
-                .flashAttr("user", user)
+                                 .flashAttr("user", user)
         )
-                .andExpect(view().name("users/login"))
-                .andExpect(content().string(containsString("Please Login:")));
+            .andExpect(view().name("redirect:/users/login"));
     }
-
+    
     //This test checks the controller logic for user signin when user requests for a signin form where he can enter the username and password and checks whether the logic returns the html file 'users/login.html'
     @Test
     public void signinWithGetRequest() throws Exception {
         this.mockMvc.perform(get("/users/login"))
-                .andExpect(view().name("users/login"))
-                .andExpect(content().string(containsString("Please Login:")));
+            .andExpect(view().name("users/login"))
+            .andExpect(content().string(containsString("Please Login:")));
     }
-
-
+    
+    
     //This test checks the controller logic for user signin when user enters the username and password that has not been registered and sends the POST request to the server and checks whether the logic returns the html file 'users/login.html'
     @Test
     public void signinWithWrongCredentials() throws Exception {
         User userSignin = new User();
         userSignin.setUsername("Abhi");
         userSignin.setPassword("password1@");
-
+        
         Mockito.when(userService.login(Mockito.anyObject())).thenReturn(null);
         session = new MockHttpSession();
-
-
+        
         this.mockMvc.perform(post("/users/login").session(session)
-                .flashAttr("user", userSignin)
+                                 .flashAttr("user", userSignin)
         )
-                .andExpect(view().name("users/login"))
-                .andExpect(content().string(containsString("Please Login:")));
+            .andExpect(view().name("users/login"))
+            .andExpect(content().string(containsString("Please Login:")));
     }
-
-
+    
+    
     //This test checks the controller logic for user signin when user enters the username and password that has been registered and sends the POST request to the server and checks whether the logic redirects to the request handling method with request mapping of type "/images"
     public void signinWithCorrectCredentials() throws Exception {
         User user = new User();
@@ -128,23 +127,22 @@ public class UserControllerTest {
         user.setProfile(userProfile);
         user.setId(1);
         user.setUsername("Abhi");
-        user.setPassword("password");
-
+        user.setPassword("password1@");
+        
         User userSignin = new User();
         userSignin.setUsername("Abhi");
         userSignin.setPassword("password1@");
-
+        
         Mockito.when(userService.login(Mockito.anyObject())).thenReturn(user);
         session = new MockHttpSession();
-
-
+        
         this.mockMvc.perform(post("/users/login").session(session)
-                .flashAttr("user", userSignin)
+                                 .flashAttr("user", userSignin)
         )
-                .andExpect(redirectedUrl("/images"));
+            .andExpect(redirectedUrl("/images"));
     }
-
-
+    
+    
     //This test checks the controller logic for user signout where he sends the POST request to the server to invalidate the session and checks whether the logic returns the html file 'index.html'
     @Test
     public void logout() throws Exception {
@@ -158,13 +156,13 @@ public class UserControllerTest {
         user.setId(1);
         user.setUsername("Abhi");
         user.setPassword("password");
-
+        
         session = new MockHttpSession();
         session.setAttribute("loggeduser", user);
-
+        
         this.mockMvc.perform(post("/users/logout").session(session))
-                .andExpect(view().name("index"))
-                .andExpect(content().string(containsString("Image Hoster")));
+            .andExpect(view().name("index"))
+            .andExpect(content().string(containsString("Image Hoster")));
     }
 }
-*/
+
