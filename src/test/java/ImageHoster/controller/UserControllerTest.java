@@ -80,7 +80,7 @@ public class UserControllerTest {
         user.setUsername("Abhi");
         user.setPassword("password1@");
         
-        Mockito.when(userService.checkPasswordStrength(Mockito.anyString()))
+        Mockito.when(userService.isValidPassword(Mockito.anyString()))
             .thenReturn(Boolean.TRUE);
         
         this.mockMvc.perform(post("/users/registration")

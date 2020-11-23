@@ -2,9 +2,10 @@ package ImageHoster.service;
 
 import ImageHoster.model.User;
 import ImageHoster.repository.UserRepository;
+import org.apache.commons.lang3.CharUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 @Service
 public class UserService {
@@ -35,15 +36,19 @@ public class UserService {
      * @param password
      * @return boolean returns true if all conditions are passed
      */
-    public boolean checkPasswordStrength(String password) {
+    public boolean isValidPassword(String password) {
+        // returns false if password is empty,null or contains whitespaces
+        if(StringUtils.isBlank(password)) {
+            return false;
+        }
         char[] passwordArray = password.toCharArray();
         boolean alphabetCheck = false;
         boolean numberCheck = false;
         boolean specialCharacterCheck = false;
         for (char character : passwordArray) {
-            if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) {
+            if (CharUtils.isAsciiAlpha(character)) {
                 alphabetCheck = true;
-            } else if (character >= '0' && character <= '9') {
+            } else if (CharUtils.isAsciiNumeric(character)) {
                 numberCheck = true;
             } else {
                 specialCharacterCheck = true;

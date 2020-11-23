@@ -5,14 +5,13 @@ import ImageHoster.model.User;
 import ImageHoster.model.UserProfile;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.UserService;
+import java.util.List;
+import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import javax.servlet.http.HttpSession;
-import java.util.List;
 
 
 @Controller
@@ -42,7 +41,8 @@ public class UserController {
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
     public String registerUser(User user, Model model) {
         String password = user.getPassword();
-        if (userService.checkPasswordStrength(password)) {
+        //Check if the password entered meets the criteria or not
+        if (userService.isValidPassword(password)) {
             userService.registerUser(user);
             return "redirect:/users/login";
         } else {
