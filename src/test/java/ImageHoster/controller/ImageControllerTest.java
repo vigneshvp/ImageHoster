@@ -13,7 +13,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.web.multipart.MultipartFile;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -88,7 +86,7 @@ public class ImageControllerTest {
         image.setDescription("This image is for testing purpose");
         image.setUser(user);
 
-        Mockito.when(imageService.getImageByImageIdAndTitle(Mockito.anyInt(),Mockito.anyString())).thenReturn(image);
+        Mockito.when(imageService.getImageByIdAndTitle(Mockito.anyInt(),Mockito.anyString())).thenReturn(image);
 
         this.mockMvc.perform(get("/images/1/new").session(session))
                 .andExpect(view().name("images/image"))
@@ -192,7 +190,7 @@ public class ImageControllerTest {
                 .andExpect(content().string(containsString("Edit Image")));
     }
 
-     /*
+    
     //This test checks the controller logic when non owner of the image sends the GET request to get the form to edit the image and checks whether the Model type object contains the desired attribute with desired value
     @Test
     public void editImageWithNonOwnerOfTheImage() throws Exception {
@@ -226,25 +224,16 @@ public class ImageControllerTest {
         image.setTitle("new");
         image.setDescription("This image is for testing purpose");
         image.setUser(user1);
-    
-        byte[] arr = new byte[1024];
-        MockMultipartFile file
-            = new MockMultipartFile(
-            "car",
-            "car.jpeg",
-            MediaType.IMAGE_JPEG_VALUE,
-            arr
-        );
-
+        
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
-
-        this.mockMvc.perform(multipart("/editImage").file(file)
-                .param("imageId", "1")
-                .param("tags", image.getTags().toString())
-                .session(session))
-                .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
+        
+        this.mockMvc.perform(get("/editImage")
+                                 .param("imageId", "1")
+                                 .session(session))
+            .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
     }
-    */
+    
+    
     
 
     //This test checks the controller logic when the owner of the image sends the DELETE request to delete the image and checks whether the logic returns the html file 'images.html'
